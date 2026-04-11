@@ -7,7 +7,7 @@ const sendVerificationEmail = async (email, token) => {
     const verifyUrl = `${process.env.CLIENT_URL}/verify?token=${token}`;
 
     await resend.emails.send({
-        from: "Poker Ledger <no-reply@pokerledger.com>",
+        from: "Poker Ledger <onboarding@resend.dev>",
         to: email,
         subject: "Verify your seat at the Poker Ledger",
         html: `
