@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (email, token) => {
-    const verifyUrl = `http://localhost:5173/verify?token=${token}`;
+    const verifyUrl = `${process.env.CLIENT_URL}/verify?token=${token}`;
 
     await transporter.sendMail({
         from: '"Poker Ledger" <no-reply@pokerledger.com>',

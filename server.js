@@ -1,15 +1,14 @@
 require("dotenv").config();
-
 const express  = require("express");
 const cors     = require("cors");
 const mongoose = require("mongoose");
 const passport = require("passport");
+const crypto   = require("crypto");
 
 const REQUIRED_ENV = ["MONGO_URI", "JWT_SECRET"];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
 if (missing.length) {
-    console.error(`\n❌  Missing required environment variables: ${missing.join(", ")}`);
-    console.error("    Copy backend/.env.example to backend/.env and fill in the values.\n");
+    console.error(`\n❌ Missing required environment variables: ${missing.join(", ")}`);
     process.exit(1);
 }
 
@@ -24,9 +23,9 @@ const PORT = Number(process.env.PORT) || 5000;
 
 mongoose
     .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅  MongoDB connected"))
+    .then(() => console.log("✅ MongoDB connected"))
     .catch((err) => {
-        console.error("❌  MongoDB connection failed:", err.message);
+        console.error("❌ MongoDB connection failed:", err.message);
         process.exit(1);
     });
 
@@ -34,18 +33,17 @@ const CLIENT_URL = (process.env.CLIENT_URL || "http://localhost:5173").replace(/
 
 app.use(
     cors({
-        origin: '*',
+        origin: CLIENT_URL,
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
 
-app.options("/{*splat}", cors());
+app.options("*", cors());
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
-
 app.use(passport.initialize());
 
 if (process.env.NODE_ENV !== "production") {
@@ -67,29 +65,22 @@ app.get("/api/health", (_req, res) =>
     })
 );
 
-app.use((_req, res) => {
-    res.status(404).json({ error: "Route not found." });
-});
+app.use((_req, res) => res.status(404).json({ error: "Route not found." }));
 
 app.use((err, _req, res, _next) => {
     console.error("[Unhandled Error]", err);
-
-    const message =
-        process.env.NODE_ENV === "production"
-            ? "Internal server error."
-            : err.message || "Internal server error.";
-
+    const message = process.env.NODE_ENV === "production" ? "Internal server error." : err.message;
     res.status(err.status || 500).json({ error: message });
 });
 
 const server = app.listen(PORT, () => {
     console.log(`
-🃏  Poker Ledger API
+🃏 Poker Ledger API
 ────────────────────────────────
   API     →  http://localhost:${PORT}/api
   Health  →  http://localhost:${PORT}/api/health
   CORS    →  ${CLIENT_URL}
-  DB      →  ${process.env.MONGODB_URI?.replace(/:([^@]+)@/, ":****@")}
+  DB      →  Connected
 ────────────────────────────────
   `);
 });
@@ -97,22 +88,12 @@ const server = app.listen(PORT, () => {
 function shutdown(signal) {
     console.log(`\n${signal} received — shutting down gracefully…`);
     server.close(() => {
-        console.log("HTTP server closed.");
         mongoose.connection.close(false).then(() => {
-            console.log("MongoDB connection closed.");
+            console.log("All connections closed.");
             process.exit(0);
         });
     });
-
-    setTimeout(() => {
-        console.error("Forced exit after timeout.");
-        process.exit(1);
-    }, 10_000);
 }
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT",  () => shutdown("SIGINT"));
-
-process.on("unhandledRejection", (reason) => {
-    console.error("[Unhandled Promise Rejection]", reason);
-});
