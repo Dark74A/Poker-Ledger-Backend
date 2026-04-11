@@ -73,14 +73,17 @@ app.use((err, _req, res, _next) => {
     res.status(err.status || 500).json({ error: message });
 });
 
+// Get the base URL from the environment, otherwise fallback to localhost for development
+const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
+
 const server = app.listen(PORT, () => {
     console.log(`
 🃏 Poker Ledger API
 ────────────────────────────────
-  API     →  http://localhost:${PORT}/api
-  Health  →  http://localhost:${PORT}/api/health
-  CORS    →  ${CLIENT_URL}
-  DB      →  Connected
+  API     →  ${SERVER_URL}/api
+  Health  →  ${SERVER_URL}/api/health
+  CORS    →  ${process.env.CLIENT_URL || "All Origins (Dev)"}
+  DB      →  Connected ✅
 ────────────────────────────────
   `);
 });
