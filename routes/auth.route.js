@@ -5,7 +5,7 @@ const jwt          = require("jsonwebtoken");
 const authenticate = require("../middlewares/auth.middleware");
 const User         = require("../models/user.model");
 const { sendVerificationEmail } = require("../utils/resend");
-
+const passport = require("passport");
 const router = express.Router();
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
