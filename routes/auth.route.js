@@ -47,14 +47,19 @@ router.post("/signup", async (req, res) => {
             verifyToken
         });
 
-        try {
-            await sendVerificationEmail(email, verifyToken);
-        } catch (mailErr) {
-            console.error("[signup] Failed to send verification email:", mailErr);
-        }
+        // try {
+        //     await sendVerificationEmail(email, verifyToken);
+        // } catch (mailErr) {
+        //     console.error("[signup] Failed to send verification email:", mailErr);
+        // }
+
+        // return res.status(201).json({
+        //     message: "Welcome to the Circle. Please check your email to verify your seat at the table."
+        // });
 
         return res.status(201).json({
-            message: "Welcome to the Circle. Please check your email to verify your seat at the table."
+            message: "Welcome to the table! Your account has been created successfully. You can now log in and track your sessions.",
+            type: "success"
         });
 
     } catch (err) {
@@ -105,24 +110,24 @@ router.post("/login", async (req, res) => {
         if (!valid)
             return res.status(401).json({ error: "Invalid username or password." });
 
-        if (!user.isVerified) {
-            const newToken   = crypto.randomBytes(32).toString("hex");
-            user.verifyToken = newToken;
-            await user.save();
-
-            try {
-                await sendVerificationEmail(user.email, newToken);
-            } catch (mailErr) {
-                console.error("[login] Failed to resend verification email:", mailErr);
-                return res.status(500).json({
-                    error: "Account not verified, and we failed to send a new email. Please try again."
-                });
-            }
-
-            return res.status(403).json({
-                error: "Account not verified. A fresh verification link has been sent to your email."
-            });
-        }
+        // if (!user.isVerified) {
+        //     const newToken   = crypto.randomBytes(32).toString("hex");
+        //     user.verifyToken = newToken;
+        //     await user.save();
+        //
+        //     try {
+        //         await sendVerificationEmail(user.email, newToken);
+        //     } catch (mailErr) {
+        //         console.error("[login] Failed to resend verification email:", mailErr);
+        //         return res.status(500).json({
+        //             error: "Account not verified, and we failed to send a new email. Please try again."
+        //         });
+        //     }
+        //
+        //     return res.status(403).json({
+        //         error: "Account not verified. A fresh verification link has been sent to your email."
+        //     });
+        // }
 
         const token = issueToken(user);
 
