@@ -1,24 +1,13 @@
-// utils/mailer.js
-const nodemailer = require("nodemailer");
+// utils/resend.js
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendVerificationEmail = async (email, token) => {
     const verifyUrl = `${process.env.CLIENT_URL}/verify?token=${token}`;
 
-    await transporter.sendMail({
-        from: '"Poker Ledger" <no-reply@pokerledger.com>',
+    await resend.emails.send({
+        from: "Poker Ledger <no-reply@pokerledger.com>",
         to: email,
         subject: "Verify your seat at the Poker Ledger",
         html: `
@@ -38,12 +27,12 @@ const sendVerificationEmail = async (email, token) => {
                 </a>
 
                 <p style="font-size: 12px; color: #888; margin-top: 25px;">
-                    If you didn’t request this, you can safely ignore this email.
+                    If you didn't request this, you can safely ignore this email.
                 </p>
 
             </div>
         </div>
-    `
+        `
     });
 };
 
