@@ -4,6 +4,7 @@ const cors     = require("cors");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const crypto   = require("crypto");
+const { generalLimiter, authLimiter } = require("middlewares/limiter.middleware");
 
 const REQUIRED_ENV = ["MONGO_URI", "JWT_SECRET"];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
@@ -46,6 +47,10 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
+app.use("/api", generalLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/signup", authLimiter);
+
 if (process.env.NODE_ENV !== "production") {
     app.use((req, _res, next) => {
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
@@ -73,7 +78,6 @@ app.use((err, _req, res, _next) => {
     res.status(err.status || 500).json({ error: message });
 });
 
-// Get the base URL from the environment, otherwise fallback to localhost for development
 const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
 
 const server = app.listen(PORT, () => {
