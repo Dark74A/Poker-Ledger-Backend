@@ -4,7 +4,7 @@ const cors     = require("cors");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const crypto   = require("crypto");
-const { generalLimiter, authLimiter } = require("middlewares/limiter.middleware");
+const { generalLimiter, authLimiter } = require("./middlewares/limiter.middleware");
 
 const REQUIRED_ENV = ["MONGO_URI", "JWT_SECRET"];
 const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
